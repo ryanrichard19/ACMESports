@@ -1,4 +1,4 @@
-<a href="https://www.medida.com/"><img src=".github/medida-logo.svg" width="180px" align="right" /></a>
+<a href="https://www.medida.com/"><img src="./docs/images/medida-logo.svg" width="180px" align="right" /></a>
 
 # Backend Team Lead position - Code Challenge
 
