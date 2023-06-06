@@ -138,6 +138,7 @@ components:
         rankPoints: 
           type: number
           format: float
+          minimum: 0
     LeagueEnum: 
       type: string
       enum:

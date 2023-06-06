@@ -79,6 +79,14 @@ components:
           type: string
         homeTeamCity: 
           type: string
+        homeTeamRank:
+          type: integer
+          format: int64
+          minimum: 1
+        homeTeamRankPoints: 
+          type: number
+          format: float
+          minimum: 0
         awayTeamId: 
           type: string
           format: uuid
@@ -86,6 +94,14 @@ components:
           type: string
         awayTeamCity: 
           type: string
+        awayTeamRank:
+          type: integer
+          format: int64
+          minimum: 1
+        awayTeamRankPoints: 
+          type: number
+          format: float
+          minimum: 0
     LeagueEnum: 
       type: string
       enum:
