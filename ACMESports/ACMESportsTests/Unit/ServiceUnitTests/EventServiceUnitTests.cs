@@ -1,6 +1,7 @@
 ﻿using ACMESportsAPI.Exceptions;
 using ACMESportsAPI.Models;
 using ACMESportsAPI.Services;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using System.Text;
 using System.Text.Json;
@@ -36,14 +37,19 @@ namespace ACMESportsTests.Unit.ServiceUnitTests
         private IHttpClientFactory _httpClientFactory;
         private HttpClient _httpClient;
         private IConfiguration _configuration;
+        private ILogger<EventService> _logger;
+
 
         public EventServiceUnitTests()
         {
             _httpClientFactory = Substitute.For<IHttpClientFactory>();
             _configuration = Substitute.For<IConfiguration>();
+            _logger = Substitute.For<ILogger<EventService>>();
 
             _configuration["BASE_URL"].Returns("http://localhost:8000");
             BASE_URL = _configuration["BASE_URL"];
+
+            
         }
 
         public void Dispose()
@@ -53,6 +59,12 @@ namespace ACMESportsTests.Unit.ServiceUnitTests
 
         private EventService CreateService(Dictionary<string, HttpResponseMessage> urlToResponseMap)
         {
+            _logger.Received(1).LogDebug(Arg.Any<string>());
+            _logger.Received(1).LogInformation(Arg.Any<string>());
+            _logger.Received(1).LogError(Arg.Any<string>());
+            _logger.Received(1).LogWarning(Arg.Any<string>());
+            _logger.Received(1).LogInformation(Arg.Is<string>(s => s.Contains("Made a request to")), Arg.Any<Uri>(), Arg.Any<HttpStatusCode>());
+
             var fakeHttpMessageHandler = new FakeHttpMessageHandler(urlToResponseMap);
             _httpClient = new HttpClient(fakeHttpMessageHandler)
             {
@@ -62,7 +74,7 @@ namespace ACMESportsTests.Unit.ServiceUnitTests
             _httpClientFactory.CreateClient("ThirdPartyAPI").Returns(_httpClient);
             _configuration.GetValue<string>("BASE_URL").Returns(BASE_URL);
 
-            return new EventService(_httpClientFactory, _configuration);
+            return new EventService(_httpClientFactory, _configuration, _logger);
         }
 
         private string ReadJsonFromFile(string filePath)
@@ -78,7 +90,7 @@ namespace ACMESportsTests.Unit.ServiceUnitTests
             var httpClientFactory = Substitute.For<IHttpClientFactory>();
             httpClientFactory.CreateClient("ThirdPartyAPI").Returns(httpClient);
 
-            return new EventService(httpClientFactory, _configuration);
+            return new EventService(httpClientFactory, _configuration, _logger);
         }
 
         private Dictionary<string, HttpResponseMessage> CreateErrorResponseMap(HttpStatusCode statusCode, string errorMessage, params string[] urls)

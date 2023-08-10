@@ -2,6 +2,7 @@ using ACMESportsAPI.Exceptions;
 using ACMESportsAPI.Models;
 using ACMESportsAPI.Models.RequestResponse;
 using ACMESportsAPI.Models.ThirdParty;
+using Serilog;
 using System.Net;
 using System.Text.Json;
 using System.Web;
@@ -13,26 +14,36 @@ namespace ACMESportsAPI.Services
         private readonly IHttpClientFactory _httpClientFactory;
         public string ApiName { get; } = "ThirdPartyAPI";
         public string BaseUrl { get; }
+        private ILogger<EventService> _logger;
 
-        public EventService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public EventService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<EventService> logger)
         {
             _httpClientFactory = httpClientFactory;
+            _logger = logger;
             BaseUrl = configuration["BASE_URL"];
         }
 
         private async Task<T> ExecuteRequestAsync<T>(Func<Task<HttpResponseMessage>> httpRequestFunc)
         {
-            var response = await httpRequestFunc();
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                return await response.Content.ReadFromJsonAsync<T>();
-            }
+                var response = await httpRequestFunc();
+             
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<T>();
+                }
 
-            var contentString = await response.Content.ReadAsStringAsync();
-            var problem = JsonSerializer.Deserialize<Problem>(contentString);
-            HandleErrorResponse(response.StatusCode, problem);
-            return default;
+                var contentString = await response.Content.ReadAsStringAsync();
+                var problem = JsonSerializer.Deserialize<Problem>(contentString);
+                HandleErrorResponse(response.StatusCode, problem);
+                return default;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while executing the HTTP request");
+                throw;
+            }
         }
 
         private void HandleErrorResponse(HttpStatusCode code, Problem problem)
@@ -79,9 +90,10 @@ namespace ACMESportsAPI.Services
 
         private Models.RequestResponse.Event MapEventResponse(Models.ThirdParty.Event score, List<TeamRanking> teamRankings)
         {
+            _logger.LogDebug("Mapping event response for event ID: {EventId}", score.Id);
             var homeTeamRanking = teamRankings.FirstOrDefault(tr => tr.TeamId == score.Home.Id);
             var awayTeamRanking = teamRankings.FirstOrDefault(tr => tr.TeamId == score.Away.Id);
-
+            
             return new Models.RequestResponse.Event
             {
                 EventId = score.Id,
@@ -102,6 +114,7 @@ namespace ACMESportsAPI.Services
 
         public async Task<EventResponse> GetAggregatedEvents(LeagueEnum league, DateTime startDate, DateTime endDate)
         {
+            _logger.LogInformation("Fetching aggregated events for league: {League} from {StartDate} to {EndDate}", league, startDate, endDate);
             var scoreboardTask = GetScoreboardAsync(league.ToString(), startDate, endDate);
             var teamRankingsTask = GetTeamRankingsAsync(league.ToString());
 
