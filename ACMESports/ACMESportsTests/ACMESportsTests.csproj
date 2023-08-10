@@ -13,15 +13,9 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.0" />
     <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.6" />
     <PackageReference Include="xunit" Version="2.5.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="6.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-	<ProjectReference Include="..\ACMESportsAPI\ACMESportsAPI.csproj" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" Version="2.5.0" />
+    <PackageReference Include="coverlet.collector" PrivateAssets="all" Version="6.0.0" />
+	  <ProjectReference Include="..\ACMESportsAPI\ACMESportsAPI.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,8 +27,7 @@
 
   <ItemGroup>
     <None Update="openapi.yaml">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
 </Project>
