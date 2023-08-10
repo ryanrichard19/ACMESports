@@ -32,13 +32,18 @@ namespace ACMESportsTests.Unit.ServiceUnitTests
     public class EventServiceUnitTests : IDisposable
     {
 
-        private const string BASE_URL = "http://localhost:8000";
+        private string BASE_URL = string.Empty;
         private IHttpClientFactory _httpClientFactory;
         private HttpClient _httpClient;
+        private IConfiguration _configuration;
 
         public EventServiceUnitTests()
         {
             _httpClientFactory = Substitute.For<IHttpClientFactory>();
+            _configuration = Substitute.For<IConfiguration>();
+
+            _configuration["BASE_URL"].Returns("http://localhost:8000");
+            BASE_URL = _configuration["BASE_URL"];
         }
 
         public void Dispose()
@@ -55,8 +60,9 @@ namespace ACMESportsTests.Unit.ServiceUnitTests
             };
 
             _httpClientFactory.CreateClient("ThirdPartyAPI").Returns(_httpClient);
+            _configuration.GetValue<string>("BASE_URL").Returns(BASE_URL);
 
-            return new EventService(_httpClientFactory);
+            return new EventService(_httpClientFactory, _configuration);
         }
 
         private string ReadJsonFromFile(string filePath)
@@ -68,11 +74,11 @@ namespace ACMESportsTests.Unit.ServiceUnitTests
         {
             var fakeHttpMessageHandler = new FakeHttpMessageHandler(urlToResponseMap);
             var httpClient = new HttpClient(fakeHttpMessageHandler) { BaseAddress = new Uri(BASE_URL) };
-
+            _configuration.GetValue<string>("BASE_URL").Returns(BASE_URL);
             var httpClientFactory = Substitute.For<IHttpClientFactory>();
             httpClientFactory.CreateClient("ThirdPartyAPI").Returns(httpClient);
 
-            return new EventService(httpClientFactory);
+            return new EventService(httpClientFactory, _configuration);
         }
 
         private Dictionary<string, HttpResponseMessage> CreateErrorResponseMap(HttpStatusCode statusCode, string errorMessage, params string[] urls)
@@ -91,7 +97,6 @@ namespace ACMESportsTests.Unit.ServiceUnitTests
         [Fact]
         public async Task GetAggregatedEvents_ValidateResponseAgainstExternalSchema()
         {
-            // Arrange
 
             // Arrange
             var scoreboardJson = ReadJsonFromFile("Unit\\scoreboardTestData.json");

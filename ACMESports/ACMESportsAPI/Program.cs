@@ -1,6 +1,8 @@
 using ACMESportsAPI.Models.RequestResponse;
 using ACMESportsAPI.Services;
-using Microsoft.Extensions.Logging;
+using Polly.Contrib.WaitAndRetry;
+using Polly;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,12 +11,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHttpClient();
-builder.Services.AddHttpClient("ThirdPartyAPI", c =>
-{
-    c.BaseAddress = new Uri("http://localhost:8000");
-    c.DefaultRequestHeaders.Add("X-API-Key", "Your-API-Key");
-});
+builder.Services.AddHttpClient("ThirdPartyAPI",
+    (services, c) =>
+    {
+        var config = services.GetRequiredService<IConfiguration>();
+        c.BaseAddress = new Uri(config["ThirdPartyAPI:BaseUrl"]);
+        c.DefaultRequestHeaders.Add("X-API-Key", config["ThirdPartyAPI:ApiKey"]);
+    })
+.AddTransientHttpErrorPolicy(policyBuilder => policyBuilder.WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(1), 5)));
 
 builder.Services.AddSingleton<IEventService, EventService>();
 
@@ -31,10 +35,10 @@ app.UseHttpsRedirection();
 
 
 
-app.MapPost("/events", async(EventsRequest eventsRequest, IEventService eventService) =>
+app.MapPost("/events", async (EventsRequest eventsRequest, IEventService eventService) =>
 {
     var events = await eventService.GetAggregatedEvents(eventsRequest.League, eventsRequest.StartDate, eventsRequest.EndDate);
-   
+
     return Results.Ok(events);
 }).Produces<EventResponse>(200)
   .Produces(400)

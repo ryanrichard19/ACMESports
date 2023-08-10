@@ -10,12 +10,14 @@ namespace ACMESportsAPI.Services
 {
     public class EventService : IEventService
     {
-        private readonly HttpClient _httpClient;
-        private const string API_NAME = "ThirdPartyAPI";
+        private readonly IHttpClientFactory _httpClientFactory;
+        public string ApiName { get; } = "ThirdPartyAPI";
+        public string BaseUrl { get; }
 
-        public EventService(IHttpClientFactory httpClientFactory)
+        public EventService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            _httpClient = httpClientFactory.CreateClient(API_NAME);
+            _httpClientFactory = httpClientFactory;
+            BaseUrl = configuration["BASE_URL"];
         }
 
         private async Task<T> ExecuteRequestAsync<T>(Func<Task<HttpResponseMessage>> httpRequestFunc)
@@ -54,12 +56,13 @@ namespace ACMESportsAPI.Services
         {
             return await ExecuteRequestAsync<List<Models.ThirdParty.Event>>(() =>
             {
-                var builder = new UriBuilder($"{_httpClient.BaseAddress}{league}/scoreboard");
+                var builder = new UriBuilder($"{BaseUrl}/{league}/scoreboard");
                 var query = HttpUtility.ParseQueryString(builder.Query);
                 query["since"] = since.ToString("yyyy-MM-dd");
                 query["until"] = until.ToString("yyyy-MM-dd");
                 builder.Query = query.ToString();
-                return _httpClient.GetAsync(builder.ToString());
+                var client = _httpClientFactory.CreateClient(ApiName);
+                return  client.GetAsync(builder.ToString());
             });
         }
 
@@ -67,8 +70,9 @@ namespace ACMESportsAPI.Services
         {
             return await ExecuteRequestAsync<List<Models.ThirdParty.TeamRanking>>(() =>
             {
-                var builder = new UriBuilder($"{_httpClient.BaseAddress}{league}/team-rankings");
-                return _httpClient.GetAsync(builder.ToString());
+                var builder = new UriBuilder($"{BaseUrl}/{league}/team-rankings");
+                var client = _httpClientFactory.CreateClient(ApiName);
+                return client.GetAsync(builder.ToString());
             });
         }
 
@@ -98,8 +102,13 @@ namespace ACMESportsAPI.Services
 
         public async Task<EventResponse> GetAggregatedEvents(LeagueEnum league, DateTime startDate, DateTime endDate)
         {
-            var scoreboard = await GetScoreboardAsync(league.ToString(), startDate, endDate);
-            var teamRankings = await GetTeamRankingsAsync(league.ToString());
+            var scoreboardTask = GetScoreboardAsync(league.ToString(), startDate, endDate);
+            var teamRankingsTask = GetTeamRankingsAsync(league.ToString());
+
+            await Task.WhenAll(scoreboardTask, teamRankingsTask);
+
+            var scoreboard = scoreboardTask.Result;
+            var teamRankings = teamRankingsTask.Result;
 
             var eventResponses = scoreboard.Select(score => MapEventResponse(score, teamRankings)).ToList();
 
