@@ -40,7 +40,7 @@ app.MapPost("/events", (EventsRequest eventsRequest) =>
             AwayTeamNickName = "Eagles",
             AwayTeamCity = "Eagleland",
             AwayTeamRank = 2,
-            AwayTeamRankPoints = 75.2f
+            AwayTeamRankPoints = 100f
         }
     };
 
