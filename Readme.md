@@ -17,6 +17,22 @@ Code challenge designed to evaluate technical skills of our [**Backend Team Lead
   - [License and Software Information](#license-and-software-information)
     - [License](#license)
   - [ATTENTION](#attention)
+- [ACMESports API Design and Implementation Document](#acmesports-api-design-and-implementation-document)
+  - [1. Understanding of the Assessment:](#1-understanding-of-the-assessment)
+    - [Objective:](#objective)
+    - [System Overview:](#system-overview)
+    - [Challenges:](#challenges)
+  - [2. Solutions for Potential Production Issues:](#2-solutions-for-potential-production-issues)
+    - [2.1. High Latency:](#21-high-latency)
+    - [2.2. Caching:](#22-caching)
+    - [2.3. Fault Tolerance:](#23-fault-tolerance)
+    - [2.4. Unstable Third-party APIs:](#24-unstable-third-party-apis)
+  - [3. Logging and Telemetry:](#3-logging-and-telemetry)
+    - [Logging:](#logging)
+    - [Telemetry:](#telemetry)
+  - [4. Resilience Management:](#4-resilience-management)
+  - [5. Caching Strategy:](#5-caching-strategy)
+  - [6. Automation and OpenAPI Schema:](#6-automation-and-openapi-schema)
 
 ## Introduction
 
@@ -94,3 +110,47 @@ If you want to contact Medida regarding the software, you can mail us at _challe
 
 ## ATTENTION
 Do **NOT** try to PUSH direct to THIS repository!
+
+
+# ACMESports API Design and Implementation Document
+
+## 1. Understanding of the Assessment:
+### Objective:
+- Design, implement, and enhance an API system interacting with third-party sports services.
+  
+### System Overview:
+- The system centralizes data from various sports APIs, presenting aggregated event data, scoreboards, and team rankings.
+  
+### Challenges:
+- **External Dependencies:** Relying on third-party services introduces variability.
+- **Data Aggregation:** Integration of diverse datasets for a comprehensive event view.
+- **Error Handling:** Graceful error management ensures a smooth user experience.
+
+## 2. Solutions for Potential Production Issues:
+### 2.1. High Latency:
+- Utilize load balancers, CDNs, and asynchronous operations.
+  
+### 2.2. Caching:
+- Implement in-memory caches like Redis, use HTTP cache headers, and consider distributed cache systems.
+  
+### 2.3. Fault Tolerance:
+- Apply retries with exponential backoff, circuit breakers, fallbacks, and timeouts.
+  
+### 2.4. Unstable Third-party APIs:
+- Implement throttling, monitoring, API mocks for testing, and ensure graceful degradation during slowdowns or failures.
+
+## 3. Logging and Telemetry:
+### Logging:
+- Utilize log levels, structured logging, centralized solutions, log rotation, sanitization, and correlation IDs.
+  
+### Telemetry:
+- Monitor metrics, error tracking, application insights, user analytics, distributed tracing, alerting, and employ dashboard visualization. Ensure cost-effectiveness, compliance, and retrospective learning.
+
+## 4. Resilience Management:
+- Incorporate the circuit breaker pattern, retry policies, fallback mechanisms, load balancing, and operation timeouts.
+
+## 5. Caching Strategy:
+- Understand data change frequency, choose cache locations wisely, and implement cache invalidation methods. Consider using stale-while-revalidate for optimal responsiveness.
+
+## 6. Automation and OpenAPI Schema:
+- Use code generation tools for API changes, integrate with CI processes, adopt API versioning, and keep documentation synchronized.
