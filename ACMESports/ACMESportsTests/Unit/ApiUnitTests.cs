@@ -1,17 +1,29 @@
 using System.Text.Json;
-using ACMESportsAPI.Model;
+using ACMESportsAPI.Models.RequestResponse;
+using ACMESportsAPI.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Readers;
+using NSubstitute;
 
-namespace ACMESportsTests;
+namespace ACMESportsTests.Unit;
 
-public class UnitTest1
+public class ApiUnitTests
 {
 
     [Fact]
     public async Task PostEvents_ValidateResponseAgainstExternalSchema()
     {
-        await using var application = new ACMESportsApplication();
-        var _client = application.CreateClient("1");
+        await using var application = new WebApplicationFactory<Program>()
+       .WithWebHostBuilder(builder => builder
+           .ConfigureServices(services =>
+           {
+               services.AddSingleton<IEventService, TestEventService>();
+           }));
+
+        await using var _sut = new ACMESportsApplication();
+        var _client = application.CreateClient();
+
         // Arrange
         var request = new
         {
@@ -44,9 +56,9 @@ public class UnitTest1
             return false;
         }
 
-        var responseObjects = JsonSerializer.Deserialize<List<Event>>(responseBody);
+        var responseObjects = JsonSerializer.Deserialize<EventResponse>(responseBody);
 
-        foreach (Event evt in responseObjects)
+        foreach (Event evt in responseObjects?.Events)
         {
             // Validate Event object
             if (evt.EventId == Guid.Empty)

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "timestamp": "2023-08-06T14:00:00Z",
+    "home": {
+      "id": "123e4567-e89b-12d3-a456-426614174001",
+      "nickName": "Panthers",
+      "city": "Charlotte"
+    },
+    "away": {
+      "id": "123e4567-e89b-12d3-a456-426614174002",
+      "nickName": "Eagles",
+      "city": "Philadelphia"
+    }
+  }
+]

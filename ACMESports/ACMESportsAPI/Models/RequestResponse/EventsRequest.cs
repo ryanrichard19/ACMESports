@@ -9,12 +9,10 @@
  */
 
 
-using System.Text;
 using System.ComponentModel.DataAnnotations;
-using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace ACMESportsAPI.Model
+namespace ACMESportsAPI.Models.RequestResponse
 {
     /// <summary>
     /// 

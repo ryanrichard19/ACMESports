@@ -12,7 +12,7 @@
 using System.Text.Json.Serialization;
 using System.Runtime.Serialization;
 
-namespace ACMESportsAPI.Model
+namespace ACMESportsAPI.Models
 {
     /// <summary>
     /// Gets or Sets LeagueEnum

@@ -11,7 +11,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace ACMESportsAPI.Model
+namespace ACMESportsAPI.Models.RequestResponse
 {
     /// <summary>
     /// 

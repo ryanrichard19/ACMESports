@@ -1,4 +1,5 @@
-using ACMESportsAPI.Model;
+using ACMESportsAPI.Models.RequestResponse;
+using ACMESportsAPI.Services;
 using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("ThirdPartyAPI", c =>
+{
+    c.BaseAddress = new Uri("http://localhost:8000");
+    c.DefaultRequestHeaders.Add("X-API-Key", "Your-API-Key");
+});
+
+builder.Services.AddSingleton<IEventService, EventService>();
 
 var app = builder.Build();
 
@@ -21,31 +31,12 @@ app.UseHttpsRedirection();
 
 
 
-app.MapPost("/events", (EventsRequest eventsRequest) =>
+app.MapPost("/events", async(EventsRequest eventsRequest, IEventService eventService) =>
 {
-    // Dummy data
-    var exampleEvents = new List<Event>
-    {
-        new Event
-        {
-            EventId = Guid.NewGuid(),
-            EventDateimestamp = DateTime.Now,
-            EventTime = "15:30",
-            HomeTeamId = Guid.NewGuid(),
-            HomeTeamNickName = "Hawks",
-            HomeTeamCity = "Hawkstown",
-            HomeTeamRank = 1,
-            HomeTeamRankPoints = 87.5f,
-            AwayTeamId = Guid.NewGuid(),
-            AwayTeamNickName = "Eagles",
-            AwayTeamCity = "Eagleland",
-            AwayTeamRank = 2,
-            AwayTeamRankPoints = 100f
-        }
-    };
-
-    return Results.Ok(exampleEvents);
-}).Produces<List<Event>>(200)
+    var events = await eventService.GetAggregatedEvents(eventsRequest.League, eventsRequest.StartDate, eventsRequest.EndDate);
+   
+    return Results.Ok(events);
+}).Produces<EventResponse>(200)
   .Produces(400)
   .Produces(500)
   .WithName("PollingEvents");
