@@ -1,7 +1,6 @@
 using System.Text.Json;
 using ACMESportsAPI.Model;
 using Microsoft.OpenApi.Readers;
-using Newtonsoft.Json.Linq;
 
 namespace ACMESportsTests;
 
@@ -56,7 +55,7 @@ public class UnitTest1
             }
 
             //check if evt.EventDateimestamp is not null or underfined
-            if (evt.EventDateimestamp == null)
+            if (evt.EventDateimestamp == DateTime.MinValue)
             {
                 return false;
             }
@@ -70,31 +69,31 @@ public class UnitTest1
                 return false;
             }
 
-            if (evt.AwayTeamId == Guid.Empty)
+            if (evt.HomeTeamNickName == null)
             {
-                return false;
-            }
-
-            if (evt.HomeTeamNickName == null) {
                 return false;
             }
 
             if (evt.HomeTeamCity == null)
             {
-                return false;   
+                return false;
             }
 
-            if (evt.HomeTeamRank == 0)
+            if (evt.HomeTeamRank < 1)
             {
                 return false;
             }
 
-      
-            if (evt.HomeTeamRankPoints == 0)
+            if (evt.HomeTeamRankPoints < 0)
             {
                 return false;
             }
-       
+
+            if (evt.AwayTeamId == Guid.Empty)
+            {
+                return false;
+            }
+
             if (evt.AwayTeamNickName == null)
             {
                 return false;
@@ -105,17 +104,15 @@ public class UnitTest1
                 return false;
             }
 
-            if (evt.AwayTeamRank == 0)
-            {
-                return false;
-            }   
-
-            if (evt.AwayTeamRankPoints == 0)
+            if (evt.AwayTeamRank < 1)
             {
                 return false;
             }
 
-            return true; // Return true if validation succeeds, false otherwise
+            if (evt.AwayTeamRankPoints < 0)
+            {
+                return false;
+            }
         }
         return true;
     }
