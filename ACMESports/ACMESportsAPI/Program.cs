@@ -20,12 +20,13 @@ Log.Logger = new LoggerConfiguration()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var baseUri = builder.Configuration["BASE_URL"] ?? "http://localhost:8000/";
+var requestheaders = builder.Configuration["REQUEST_HEADERS"] ?? "X-API-Key";
 builder.Services.AddHttpClient("ThirdPartyAPI",
     (services, c) =>
     {
-        var config = services.GetRequiredService<IConfiguration>();
-        c.BaseAddress = new Uri(config["ThirdPartyAPI:BaseUrl"]);
-        c.DefaultRequestHeaders.Add("X-API-Key", config["ThirdPartyAPI:ApiKey"]);
+        c.BaseAddress = new Uri(baseUri);
+        c.DefaultRequestHeaders.Add("X-API-Key", requestheaders);
     })
 .AddTransientHttpErrorPolicy(policyBuilder => policyBuilder.WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(1), 5)));
 

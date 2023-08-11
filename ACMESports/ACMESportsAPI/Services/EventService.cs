@@ -20,10 +20,10 @@ namespace ACMESportsAPI.Services
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
-            BaseUrl = configuration["BASE_URL"];
+            BaseUrl = configuration["BASE_URL"] ?? "http://localhost:8000/";
         }
 
-        private async Task<T> ExecuteRequestAsync<T>(Func<Task<HttpResponseMessage>> httpRequestFunc)
+        private async Task<T?> ExecuteRequestAsync<T>(Func<Task<HttpResponseMessage>> httpRequestFunc)
         {
             try
             {
@@ -46,24 +46,24 @@ namespace ACMESportsAPI.Services
             }
         }
 
-        private void HandleErrorResponse(HttpStatusCode code, Problem problem)
+        private void HandleErrorResponse(HttpStatusCode code, Problem? problem)
         {
             switch (code)
             {
                 case HttpStatusCode.NotFound:
-                    throw new NotFoundException($"Error from Third Party: {problem.Title}");
+                    throw new NotFoundException($"Error from Third Party: {problem?.Title}");
                 case HttpStatusCode.BadRequest:
-                    throw new BadRequestException($"Error from Third Party: {problem.Title}");
+                    throw new BadRequestException($"Error from Third Party: {problem?.Title}");
                 case HttpStatusCode.Unauthorized:
-                    throw new UnauthorizedAccessException($"Error from Third Party: {problem.Title}");
+                    throw new UnauthorizedAccessException($"Error from Third Party: {problem?.Title}");
                 case HttpStatusCode.Forbidden:
-                    throw new ForbiddenAccessException($"Error from Third Party: {problem.Title}");
+                    throw new ForbiddenAccessException($"Error from Third Party: {problem?.Title}");
                 default:
-                    throw new ApiException($"Error from Third Party: {problem.Title}");
+                    throw new ApiException($"Error from Third Party: {problem?.Title}");
             }
         }
 
-        private async Task<List<Models.ThirdParty.Event>> GetScoreboardAsync(string league, DateTime since, DateTime until)
+        private async Task<List<Models.ThirdParty.Event>?> GetScoreboardAsync(string league, DateTime since, DateTime until)
         {
             return await ExecuteRequestAsync<List<Models.ThirdParty.Event>>(() =>
             {
@@ -77,7 +77,7 @@ namespace ACMESportsAPI.Services
             });
         }
 
-        private async Task<List<Models.ThirdParty.TeamRanking>> GetTeamRankingsAsync(string league)
+        private async Task<List<Models.ThirdParty.TeamRanking>?> GetTeamRankingsAsync(string league)
         {
             return await ExecuteRequestAsync<List<Models.ThirdParty.TeamRanking>>(() =>
             {
@@ -101,12 +101,12 @@ namespace ACMESportsAPI.Services
                 EventTime = score.Timestamp.TimeOfDay.ToString(),
                 HomeTeamId = score.Home.Id,
                 HomeTeamNickName = score.Home.NickName,
-                HomeTeamCity = score.Home.City,
+                HomeTeamCity = score.Home.City ?? string.Empty,
                 HomeTeamRank = awayTeamRanking?.Rank ?? 0,
                 HomeTeamRankPoints = homeTeamRanking?.RankPoints ?? 0,
                 AwayTeamId = score.Away.Id,
                 AwayTeamNickName = score.Away.NickName,
-                AwayTeamCity = score.Away.City,
+                AwayTeamCity = score.Away.City ?? string.Empty,
                 AwayTeamRank = awayTeamRanking?.Rank ?? 0,
                 AwayTeamRankPoints = awayTeamRanking?.RankPoints ?? 0
             };
@@ -122,6 +122,17 @@ namespace ACMESportsAPI.Services
 
             var scoreboard = scoreboardTask.Result;
             var teamRankings = teamRankingsTask.Result;
+
+            if (scoreboard == null || !scoreboard.Any())
+            {
+                throw new InvalidOperationException("No scoreboard data returned.");
+            }
+
+            if (teamRankings == null || !teamRankings.Any())
+            {
+                throw new InvalidOperationException("No team rankings data returned.");
+            }
+
 
             var eventResponses = scoreboard.Select(score => MapEventResponse(score, teamRankings)).ToList();
 

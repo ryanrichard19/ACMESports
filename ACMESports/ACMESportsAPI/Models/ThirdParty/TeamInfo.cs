@@ -9,9 +9,9 @@ namespace ACMESportsAPI.Models.ThirdParty
         public Guid Id { get; set; }
 
         [JsonPropertyName("nickName")]
-        public string NickName { get; set; }
+        public string NickName { get; set; } = string.Empty;
 
         [JsonPropertyName("city")]
-        public string City { get; set; }
+        public string? City { get; set; }
     }
 }
