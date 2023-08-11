@@ -24,15 +24,32 @@ Code challenge designed to evaluate technical skills of our [**Backend Team Lead
     - [Challenges:](#challenges)
   - [2. Solutions for Potential Production Issues:](#2-solutions-for-potential-production-issues)
     - [2.1. High Latency:](#21-high-latency)
-    - [2.2. Caching:](#22-caching)
+    - [2.2. Caching and Data Management:](#22-caching-and-data-management)
     - [2.3. Fault Tolerance:](#23-fault-tolerance)
     - [2.4. Unstable Third-party APIs:](#24-unstable-third-party-apis)
+    - [2.5. Resilience Management:](#25-resilience-management)
   - [3. Logging and Telemetry:](#3-logging-and-telemetry)
-    - [Logging:](#logging)
-    - [Telemetry:](#telemetry)
-  - [4. Resilience Management:](#4-resilience-management)
-  - [5. Caching Strategy:](#5-caching-strategy)
-  - [6. Automation and OpenAPI Schema:](#6-automation-and-openapi-schema)
+    - [3.1 Logging:](#31-logging)
+    - [3.2 Telemetry:](#32-telemetry)
+  - [4. Automation and API Maintenance:](#4-automation-and-api-maintenance)
+  - [5. Contract Testing and Schema Verification:](#5-contract-testing-and-schema-verification)
+    - [5.1 Pact for Contract Testing:](#51-pact-for-contract-testing)
+    - [5.2. OpenAPI Schema Verification:](#52-openapi-schema-verification)
+    - [5.3. Continuous Verification:](#53-continuous-verification)
+  - [Project Implementation and Tooling](#project-implementation-and-tooling)
+    - [Tooling:](#tooling)
+      - [**1. .NET 7 Minimal API:**](#1-net-7-minimal-api)
+      - [**2. Serilog:**](#2-serilog)
+      - [**3. Polly:**](#3-polly)
+    - [Patterns and Architectural Choices:](#patterns-and-architectural-choices)
+      - [**1. Dependency Injection (DI):**](#1-dependency-injection-di)
+      - [**2. Service Layer:**](#2-service-layer)
+      - [**3. Custom Exception Handling:**](#3-custom-exception-handling)
+      - [**4. OpenAPI-Generator Tool:**](#4-openapi-generator-tool)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Setting Up the Project](#setting-up-the-project)
+    - [Running Tests](#running-tests)
 
 ## Introduction
 
@@ -127,30 +144,160 @@ Do **NOT** try to PUSH direct to THIS repository!
 - **Error Handling:** Graceful error management ensures a smooth user experience.
 
 ## 2. Solutions for Potential Production Issues:
+
 ### 2.1. High Latency:
 - Utilize load balancers, CDNs, and asynchronous operations.
-  
-### 2.2. Caching:
-- Implement in-memory caches like Redis, use HTTP cache headers, and consider distributed cache systems.
-  
+
+### 2.2. Caching and Data Management:
+- Implement in-memory caches such as Redis, use HTTP cache headers, and explore distributed cache systems.
+- Factor in the frequency of data changes and the need for up-to-date data.
+- Understand data change frequency, select cache locations wisely, and implement cache invalidation methods. Consider using stale-while-revalidate for optimal responsiveness.
+
 ### 2.3. Fault Tolerance:
-- Apply retries with exponential backoff, circuit breakers, fallbacks, and timeouts.
-  
+- Basic retries have been implemented using Polly for exponential backoff.
+- Further enhancements like circuit breakers, fallbacks, and timeouts are advised for comprehensive fault tolerance.
+
 ### 2.4. Unstable Third-party APIs:
 - Implement throttling, monitoring, API mocks for testing, and ensure graceful degradation during slowdowns or failures.
 
-## 3. Logging and Telemetry:
-### Logging:
-- Utilize log levels, structured logging, centralized solutions, log rotation, sanitization, and correlation IDs.
-  
-### Telemetry:
-- Monitor metrics, error tracking, application insights, user analytics, distributed tracing, alerting, and employ dashboard visualization. Ensure cost-effectiveness, compliance, and retrospective learning.
-
-## 4. Resilience Management:
+### 2.5. Resilience Management:
 - Incorporate the circuit breaker pattern, retry policies, fallback mechanisms, load balancing, and operation timeouts.
 
-## 5. Caching Strategy:
-- Understand data change frequency, choose cache locations wisely, and implement cache invalidation methods. Consider using stale-while-revalidate for optimal responsiveness.
+## 3. Logging and Telemetry:
 
-## 6. Automation and OpenAPI Schema:
-- Use code generation tools for API changes, integrate with CI processes, adopt API versioning, and keep documentation synchronized.
+### 3.1 Logging:
+Key considerations for robust logging include:
+
+- **Log Levels:** Ensure granularity by defining severity levels (`DEBUG`, `INFO`, `ERROR`).
+- **Structured Logging:** Transition to machine-readable formats like JSON.
+- **Centralized Solutions:** Tools like ELK and Graylog can centralize logs for easier analysis.
+- **Log Rotation:** Prioritize log archiving and management.
+- **Sanitization:** Safeguard sensitive information.
+- **Correlation IDs:** Track transactions, especially in microservices architectures.
+
+### 3.2 Telemetry:
+For gaining pivotal insights in a production environment:
+
+- **Monitor Metrics:** Focus on crucial metrics like response times or error rates.
+- **Error Tracking:** Tools like Sentry offer real-time monitoring.
+- **Application Insights:** Cloud services, such as Azure's, provide in-depth analytics.
+- **User Analytics:** Understand user behavior with tools like Google Analytics.
+- **Distributed Tracing:** Track requests across service touchpoints.
+- **Alerting:** Automate notifications for specific events.
+- **Dashboard Visualization:** Tools like Grafana provide a unified system view.
+- **Budgeting & Learning:** Balance cost, ensure regulatory compliance, and learn from insights.
+
+## 4. Automation and API Maintenance:
+- Automate API changes with code generation tools.
+- Seamlessly integrate with CI processes.
+- Employ API versioning and maintain up-to-date documentation.
+
+## 5. Contract Testing and Schema Verification:
+
+### 5.1 Pact for Contract Testing:
+- Use Pact for contract testing between services, ensuring adherence to agreed contracts.
+
+### 5.2. OpenAPI Schema Verification:
+- Regularly test the API against its OpenAPI schema for consistency.
+
+### 5.3. Continuous Verification:
+- Embed these tests in the CI/CD pipeline to ensure stability across deployments.
+
+## Project Implementation and Tooling
+
+This project is based on .NET 7's Minimal API approach, focusing on creating lightweight and expressive endpoints without the burden of excessive boilerplate. The key choices made in the implementation are detailed below.
+
+### Tooling:
+
+#### **1. .NET 7 Minimal API:**
+- **Purpose:** Building lightweight and expressive HTTP APIs with reduced boilerplate and improved efficiency.
+- **Rationale:** The Minimal API feature in .NET 7 offers a way to streamline the process of setting up and managing web APIs, eliminating much of the ceremony and boilerplate associated with earlier versions of ASP.NET Core.
+
+#### **2. Serilog:**
+- **Purpose:** Enhanced logging mechanism to ensure that meaningful logs are captured during the application's runtime.
+- **Rationale:** Serilog integrates seamlessly with the .NET environment and offers structured logging, making it easier to correlate logs and understand system behavior.
+
+#### **3. Polly:**
+- **Purpose:** Implement resilience and transient-fault-handling capabilities in the application, especially for HTTP requests.
+- **Rationale:** When dealing with external systems or third-party APIs, it's crucial to handle potential failures gracefully. Polly offers a way to implement retries with exponential backoff, making sure our application can recover from transient faults.
+
+### Patterns and Architectural Choices:
+
+#### **1. Dependency Injection (DI):**
+- **Description:** Using .NET's built-in DI mechanism to manage dependencies across the project.
+- **Rationale:** DI simplifies object management and configuration, leading to more maintainable and testable code. It is especially beneficial when setting up services that require configurations or when setting up HTTP clients.
+
+#### **2. Service Layer:**
+- **Description:** Abstracting the core business logic and HTTP calls to third-party APIs inside dedicated services.
+- **Rationale:** By abstracting this logic into a service layer, the application achieves a cleaner separation of concerns, making the codebase easier to manage and test.
+
+#### **3. Custom Exception Handling:**
+- **Description:** Defined custom exceptions (e.g., `NotFoundException`, `BadRequestException`) to handle various HTTP response scenarios.
+- **Rationale:** Using specific exceptions for different error scenarios provides better clarity on the nature of the problem and offers a more granular approach to error handling.
+
+#### **4. OpenAPI-Generator Tool:**
+- **Description:** Initially considered to auto-generate client code, models, and other components from an OpenAPI definition.
+- **Rationale:** Although OpenAPI tools can significantly speed up the development process, it was decided to revert to manual modeling due to excessive boilerplate. Instead, a minimalistic approach was adopted, cherry-picking only the necessary model definitions.
+
+## Getting Started
+
+### Prerequisites
+
+1. **Git:** To clone the repository, ensure that you have [Git](https://git-scm.com/) installed on your machine.
+
+2. **.NET 7 SDK:** The project is built using .NET 7, so ensure that you have the .NET 7 SDK installed. If not, download and install it from [here](https://dotnet.microsoft.com/download/dotnet/7.0).
+
+### Setting Up the Project
+
+1. **Clone the Repository:**
+
+    ```bash
+    git clone https://github.com/ryanrichard19/ACMESports.git
+    ```
+
+2. **Navigate to the ACMESportsAPI directory:**
+
+    ```bash
+    cd ACMESportsAPI
+    ```
+
+3. **Restore the Project:**
+
+    Before running the project, it's essential to restore any .NET packages or dependencies.
+
+    ```bash
+    dotnet restore
+    ```
+
+4. **Modify Configuration (If Needed):**
+
+    If there's a need to modify configurations such as database connection strings, API endpoints, or any other settings:
+
+    - Open `appsettings.json` located in the root directory of `ACMESportsAPI`.
+    - Make necessary changes and save the file.
+
+5. **Run the Project:**
+
+    ```bash
+    dotnet run
+    ```
+
+    Upon successful execution, the API should be running, and you can access it via your browser or any API client.
+
+### Running Tests
+
+1. **Navigate to the ACMESportsTests directory:**
+
+    ```bash
+    cd ACMESportsTests
+    ```
+
+2. **Execute the Tests:**
+
+    ```bash
+    dotnet test
+    ```
+
+    This command will discover and execute all tests within the `ACMESportsTests` project.
+
+---
