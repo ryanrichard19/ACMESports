@@ -15,12 +15,4 @@ def test_get_events():
     response = client.post("/events", json={"league": "NFL", "startDate": "2023-08-01", "endDate": "2023-08-31"})
 
     assert response.status_code == 200
-    assert response.json()
-
-
-# def test_bad_request():
-#     respx.get("/LeagueEnum.NFL/scoreboard").mock(return_value=httpx.Response(400, json=mock_error_response))
-#     respx.get("/LeagueEnum.NFL/team-rankings").mock(return_value=httpx.Response(400, json=mock_error_response))
-#     response = client.post("/events", json={"league": "NFL", "startDate": "2023-08-01", "endDate": "2023-08-31"})
-#     assert response.status_code == 400
-#     assert "detail" in response.json()
+    assert "events" in response.json()
