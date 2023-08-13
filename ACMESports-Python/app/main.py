@@ -1,13 +1,17 @@
 import asyncio
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.api_client import get_scoreboard, get_team_rankings
 from app.data_transformer import transform_events
 from app.schemas import EventsRequest, EventsResponse
+from app.logger_config import logger
+
 
 from config import THIRD_PARTY_BASE_URL
+from app.schemas.event import LeagueEnum
 
 app = FastAPI()
+
 
 origins = [
     THIRD_PARTY_BASE_URL,
@@ -34,9 +38,15 @@ async def get_events(request: EventsRequest):
         An EventsResponse object containing the events for the given league and date range.
     """
     league = request.league
+    
     start_date = request.startDate
     end_date = request.endDate
-    print(f"league: {league}, start_date: {start_date}, end_date: {end_date}")
+    logger.info(
+        "Getting events for league: %s, start_date: %s, end_date: %s",
+        league,
+        start_date,
+        end_date,
+    )
     scoreboard_data, rankings_data = await asyncio.gather(
         get_scoreboard(league, start_date, end_date), get_team_rankings(league)
     )
