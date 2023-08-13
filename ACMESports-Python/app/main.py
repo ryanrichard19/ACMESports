@@ -2,7 +2,6 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
-from tenacity import RetryError
 from starlette.exceptions import HTTPException
 from app.exception_handlers import (
     request_validation_exception_handler,

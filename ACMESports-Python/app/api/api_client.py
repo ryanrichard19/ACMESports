@@ -1,48 +1,58 @@
 import logging
 import httpx
 import random
+import pybreaker
 from fastapi import HTTPException
-from tenacity import before_sleep_log, retry, retry_if_exception_type, stop_after_attempt
-from tenacity.wait import wait_combine, wait_random_exponential, wait_fixed
+from tenacity import (
+    before_sleep_log,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+)
+from tenacity.wait import wait_combine, wait_fixed
 from app.logger import logger
 from config import THIRD_PARTY_BASE_URL, API_KEY
 
 HEADERS = {"X-API-Key": API_KEY}
 
 MAX_RETRIES = 3
-BASE_WAIT_TIME = 2  
+BASE_WAIT_TIME = 2
 
-def wait_decorrelated_jitter_exp(base_delay=1, max_delay=10, max_tries=5, exponent_base=2):
+breaker = pybreaker.CircuitBreaker(fail_max=3, reset_timeout=20)
+
+
+def wait_decorrelated_jitter_exp(
+    base_delay=1, max_delay=10, max_tries=5, exponent_base=2
+):
     """
     Decorrelated jitter backoff strategy
     """
-    
+
     def decorrelated_jitter_exp(retry_state):  # added the retry_state parameter
-        previous_attempt_number = retry_state.attempt_number  # get attempt number from retry_state
-        exp_delay = base_delay * (exponent_base ** previous_attempt_number)
+        previous_attempt_number = (
+            retry_state.attempt_number
+        )  # get attempt number from retry_state
+        exp_delay = base_delay * (exponent_base**previous_attempt_number)
         wait_time = random.uniform(base_delay, min(exp_delay, max_delay))
         return wait_time
-    
-    return wait_combine(
-        wait_fixed(base_delay), 
-        decorrelated_jitter_exp
-    )
 
-# Use tenacity's retry decorator with the above strategy
+    return wait_combine(wait_fixed(base_delay), decorrelated_jitter_exp)
+
+
+@breaker
 @retry(
     wait=wait_decorrelated_jitter_exp(max_tries=MAX_RETRIES),
-    retry=retry_if_exception_type(httpx.HTTPError),  # Retry on specific exceptions
-    stop=stop_after_attempt(MAX_RETRIES),  # This explicitly limits the number of retry attempts
-    before_sleep=before_sleep_log(logger, logging.DEBUG),  # Log retries
-    reraise=True  # Make sure the RetryError exception is raised when retries are exhausted
+    retry=retry_if_exception_type(httpx.HTTPError),
+    stop=stop_after_attempt(MAX_RETRIES),
+    before_sleep=before_sleep_log(logger, logging.DEBUG),
+    reraise=True,
 )
 async def make_request(url, method="GET", headers=None, params=None):
-    
     async with httpx.AsyncClient() as client:
         if method == "GET":
             response = await client.get(url, headers=headers, params=params)
-        response.raise_for_status()
-        return response
+        return response.json()
+
 
 async def parse_and_raise_error(response):
     """Parse the error response and raise an HTTPException."""
@@ -54,10 +64,9 @@ async def parse_and_raise_error(response):
 
         logger.error("Error from 3rd party API. Title: %s, Detail: %s", title, detail)
 
-        # Raise an HTTPException
         raise HTTPException(status_code=status, detail=detail)
 
-    except ValueError as exc:  # If the response body is not JSON or unexpected format
+    except ValueError as exc:
         raise HTTPException(
             status_code=response.status_code,
             detail="Unexpected error from 3rd party API.",
@@ -79,7 +88,7 @@ async def get_scoreboard(league, since, until):
     endpoint = f"{THIRD_PARTY_BASE_URL}/{league.value}/scoreboard"
     params = {"since": since, "until": until}
     response = await make_request(endpoint, headers=HEADERS, params=params)
-    if response.status_code != 200:
+    if response.status_code >= 400:
         await parse_and_raise_error(response)
     return response.json()
 
@@ -96,7 +105,7 @@ async def get_team_rankings(league):
     """
     endpoint = f"{THIRD_PARTY_BASE_URL}/{league.value}/team-rankings"
     response = await make_request(endpoint, headers=HEADERS)
-    if response.status_code != 200:
+    if response.status_code >= 400:
         await parse_and_raise_error(response)
 
     return response.json()
