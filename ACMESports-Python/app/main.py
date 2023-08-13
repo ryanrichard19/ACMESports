@@ -2,6 +2,7 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from tenacity import RetryError
 from starlette.exceptions import HTTPException
 from app.exception_handlers import (
     request_validation_exception_handler,
@@ -57,9 +58,11 @@ async def get_events(request: EventsRequest):
         start_date,
         end_date,
     )
+
     scoreboard_data, rankings_data = await asyncio.gather(
         get_scoreboard(league, start_date, end_date), get_team_rankings(league)
     )
+   
     transformed_data = transform_events(scoreboard_data, rankings_data)
 
     return EventsResponse(events=transformed_data)

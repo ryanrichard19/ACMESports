@@ -11,6 +11,7 @@ from fastapi.exception_handlers import (
 from fastapi.responses import JSONResponse
 from fastapi.responses import PlainTextResponse
 from fastapi.responses import Response
+import httpx
 
 from app.logger import logger
 
@@ -70,4 +71,12 @@ async def unhandled_exception_handler(
     logger.error(
         f'{host}:{port} - "{request.method} {url}" 500 Internal Server Error <{exception_name}: {exception_value}>'
     )
-    return PlainTextResponse(str(exc), status_code=500)
+
+    # Capture httpx HTTP error exceptions
+    if isinstance(exc, httpx.HTTPError):
+        user_message = "An external service error occurred. Please contact admin for details."
+        logger.error(f"External API Error: {str(exc)}")
+        return PlainTextResponse(user_message, status_code=500)
+    
+    # For other exceptions, just return the generic error
+    return PlainTextResponse("An unexpected error occurred. Please contact admin for details.", status_code=500)
