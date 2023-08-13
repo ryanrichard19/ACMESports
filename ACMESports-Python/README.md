@@ -15,8 +15,8 @@ This project marks my initial venture into the world of Python and FastAPI. Emba
 
 1. **Clone the repository**:
     ```bash
-    git clone [https://github.com/ryanrichard19/ACMESports]
-    cd [ACMESports-Python]
+    git clone https://github.com/ryanrichard19/ACMESports
+    cd ACMESports-Python
     ```
 
 2. **Install the required packages**:
