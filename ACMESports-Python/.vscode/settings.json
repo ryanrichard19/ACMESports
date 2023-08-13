@@ -5,5 +5,17 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
-    "python.formatting.provider": "none"
-}
+    "settings": {
+        "python.analysis.typeCheckingMode": "strict",
+        "window.zoomLevel": 3,
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.formatOnSaveMode": "file",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        },
+        "python.linting.pylintEnabled": true,
+        "python.linting.enabled": true,
+        "python.formatting.provider": "black",
+    }
+} 
