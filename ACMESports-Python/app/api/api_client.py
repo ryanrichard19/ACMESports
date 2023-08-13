@@ -1,6 +1,6 @@
-from fastapi import HTTPException
-from app.logger_config import logger
 import httpx
+from fastapi import HTTPException
+from app.logger import logger
 from config import THIRD_PARTY_BASE_URL, API_KEY
 
 HEADERS = {"X-API-Key": API_KEY}

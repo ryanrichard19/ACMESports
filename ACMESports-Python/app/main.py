@@ -1,16 +1,27 @@
 import asyncio
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException
+from app.exception_handlers import (
+    request_validation_exception_handler,
+    http_exception_handler,
+    unhandled_exception_handler,
+)
+from app.middleware import log_request_middleware
 from app.api.api_client import get_scoreboard, get_team_rankings
 from app.data_transformer import transform_events
 from app.schemas import EventsRequest, EventsResponse
-from app.logger_config import logger
-
+from app.logger import logger
 
 from config import THIRD_PARTY_BASE_URL
-from app.schemas.event import LeagueEnum
 
 app = FastAPI()
+
+app.middleware("http")(log_request_middleware)
+app.add_exception_handler(RequestValidationError, request_validation_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(Exception, unhandled_exception_handler)
 
 
 origins = [
@@ -38,7 +49,6 @@ async def get_events(request: EventsRequest):
         An EventsResponse object containing the events for the given league and date range.
     """
     league = request.league
-    
     start_date = request.startDate
     end_date = request.endDate
     logger.info(

@@ -16,3 +16,10 @@ def test_get_events():
 
     assert response.status_code == 200
     assert "events" in response.json()
+
+
+def test_bad_request():
+    respx.get("/NFL/scoreboard").mock(return_value=httpx.Response(400, json=mock_error_response))
+    response = client.post("/events", json={"league": "XXXX", "startDate": "2023-08-01", "endDate": "2023-08-31"})
+    assert response.status_code == 400
+    assert "errors" in response.json()
