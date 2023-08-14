@@ -40,7 +40,6 @@ public class IntegrationTests
     }
 
 
-
     [Fact]
     public async Task GetEvents_ReturnsErrorForInvalidInput()
     {
@@ -52,6 +51,5 @@ public class IntegrationTests
         }), Encoding.UTF8, "application/json"));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        // If you return any specific error message or structure, you can deserialize and check that too.
     }
 }

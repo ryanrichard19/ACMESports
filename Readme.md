@@ -31,11 +31,19 @@ Code challenge designed to evaluate technical skills of our [**Backend Team Lead
   - [3. Logging and Telemetry:](#3-logging-and-telemetry)
     - [3.1 Logging:](#31-logging)
     - [3.2 Telemetry:](#32-telemetry)
+    - [3.3 Anomaly Detection:](#33-anomaly-detection)
   - [4. Automation and API Maintenance:](#4-automation-and-api-maintenance)
   - [5. Contract Testing and Schema Verification:](#5-contract-testing-and-schema-verification)
     - [5.1 Pact for Contract Testing:](#51-pact-for-contract-testing)
     - [5.2. OpenAPI Schema Verification:](#52-openapi-schema-verification)
     - [5.3. Continuous Verification:](#53-continuous-verification)
+  - [6. Security Considerations:](#6-security-considerations)
+    - [6.1 Authentication \& Authorization:](#61-authentication--authorization)
+    - [6.2 Data Protection:](#62-data-protection)
+    - [6.3 API Security:](#63-api-security)
+    - [6.4 Monitoring \& Anomaly Detection:](#64-monitoring--anomaly-detection)
+    - [6.5 Third-party Dependencies:](#65-third-party-dependencies)
+    - [6.6 Incident Response:](#66-incident-response)
   - [Project Implementation and Tooling](#project-implementation-and-tooling)
     - [Tooling:](#tooling)
       - [**1. .NET 7 Minimal API:**](#1-net-7-minimal-api)
@@ -335,4 +343,17 @@ This project is based on .NET 7's Minimal API approach, focusing on creating lig
 
     This command will discover and execute all tests within the `ACMESportsTests` project.
 
----
+    ### Running Integration Tests
+
+
+1. **Boot up Prism using Docker-Compose**:
+    ```bash
+    docker-compose up
+
+2. **Verify Prism is running**:
+
+   Once Prism is up and running, you can access its mocked endpoints from your API tests or via tools like `curl` or Postman, typically at `http://0.0.0.0:4010`.
+
+3. **Run your integration tests**
+    ```bash
+    pytest tests/integration_tests
