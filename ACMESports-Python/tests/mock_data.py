@@ -38,8 +38,10 @@ mock_successfull_team_rankings = [
 
 
 mock_error_response = {
-    "title": "Bad Request",
-    "status": 400,
-    "detail": "Invalid league provided",
-    "cause": None,
+  "title": "Invalid Request",
+  "status": 400,
+  "detail": "The request parameters provided are incorrect or in an invalid format.",
+  "cause": {
+    "value": "The 'league' parameter provided does not match any of our supported leagues, or the 'since'/'until' query parameters are missing or in an invalid format. Please ensure you're following the correct format and try again."
+  }
 }

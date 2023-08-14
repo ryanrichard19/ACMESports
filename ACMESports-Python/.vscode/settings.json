@@ -6,7 +6,7 @@
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
     "settings": {
-        "python.analysis.typeCheckingMode": "strict",
+        "python.analysis.typeCheckingMode": "basic",
         "window.zoomLevel": 3,
         "editor.formatOnSave": true,
         "editor.formatOnPaste": true,

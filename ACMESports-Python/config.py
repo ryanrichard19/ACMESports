@@ -1,2 +1,2 @@
-THIRD_PARTY_BASE_URL = "https://de27233b-7a7b-4441-aaef-a77f425ba15b.mock.pstmn.io"
+THIRD_PARTY_BASE_URL = "http://0.0.0.0:4010"
 API_KEY = "YOUR_API_KEY_HERE"

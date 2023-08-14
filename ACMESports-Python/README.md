@@ -9,7 +9,8 @@ This project marks my initial venture into the world of Python and FastAPI. Emba
 
 - Python 3.9+
 - FastAPI
-- [Any other dependencies or services you might be using]
+- Docker
+- Docker-Compose
 
 ### Installation & Setup
 
@@ -30,3 +31,25 @@ To run the API, use the following command:
 
 ```bash
 uvicorn app.main:app --reload
+```
+
+### Running Unit Tests
+
+    ```bash
+    pytest tests/unit_tests
+```
+### Running Integration Tests
+
+
+1. **Boot up Prism using Docker-Compose**:
+    ```bash
+    docker-compose up
+```
+2. **Verify Prism is running**:
+
+   Once Prism is up and running, you can access its mocked endpoints from your API tests or via tools like `curl` or Postman, typically at `http://0.0.0.0:4010`.
+
+3. **Run your integration tests**
+    ```bash
+    pytest tests/integration_tests
+```

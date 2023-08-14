@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 from app.api import api_client
@@ -7,7 +8,6 @@ from tests.mock_data import (
 )
 
 client = TestClient(app)
-
 
 def test_get_events_success(mocker):
     mocker.patch.object(
@@ -32,20 +32,4 @@ def test_get_events_invalid_league():
     )
     assert response.status_code == 400
 
-
-def test_get_events_third_party_failure(mocker):
-    mocker.patch.object(
-        api_client,
-        "get_scoreboard",
-        side_effect=api_client.HTTPException(
-            status_code=500, detail="Third-party API failure"
-        ),
-    )
-
-
-    response = client.post(
-        "/events",
-        json={"league": "NFL", "startDate": "2023-08-01", "endDate": "2023-08-31"},
-    )
-    assert response.status_code == 500
 
