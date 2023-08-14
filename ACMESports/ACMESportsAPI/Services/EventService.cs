@@ -44,6 +44,7 @@ namespace ACMESportsAPI.Services
             {
                 _logger.LogError(ex, "Error while executing the HTTP request");
                 throw;
+
             }
         }
 

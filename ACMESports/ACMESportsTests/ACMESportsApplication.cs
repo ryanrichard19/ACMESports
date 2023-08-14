@@ -11,7 +11,7 @@ internal class ACMESportsApplication : WebApplicationFactory<Program>
         {
             configBuilder.AddInMemoryCollection(new Dictionary<string, string>
         {
-            { "ThirdPartyAPI:BaseUrl", "http://0.0.0.0:4010" }
+            { "ThirdPartyAPI:BaseUrl", "http://localhost:4010" }
         });
         });
     }
