@@ -29,6 +29,9 @@
 
 
   <ItemGroup>
+    <None Remove="Integraton\" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="openapi.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -38,5 +41,8 @@
     <None Update="Unit\teamRankingsTestData.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Integraton\" />
   </ItemGroup>
 </Project>

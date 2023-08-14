@@ -1,10 +1,21 @@
-﻿using ACMESportsAPI.Services;
+﻿using Microsoft.AspNetCore.Hosting;
 
 namespace ACMESportsTests;
 
 internal class ACMESportsApplication : WebApplicationFactory<Program>
 {
-   
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.ConfigureAppConfiguration((context, configBuilder) =>
+        {
+            configBuilder.AddInMemoryCollection(new Dictionary<string, string>
+        {
+            { "ThirdPartyAPI:BaseUrl", "http://0.0.0.0:4010" }
+        });
+        });
+    }
+
     public HttpClient CreateClient(string id)
     {
         return CreateDefaultClient();

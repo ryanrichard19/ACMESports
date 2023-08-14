@@ -1,0 +1,239 @@
+openapi: 3.0.3
+info:
+  title: Retrieving Events 3rd Party API
+  description: |-
+    This is the API you need to call for getting the data,
+    which will be exposed via the Restful API described in the openapi-challenge-3rd-party OpenAPI file that you need to implement
+  contact:
+    name: Medida
+    email: challenges@medida.com
+    url: https://www.medida.com/
+  version: 0.1.0
+servers:
+  - url: http://localhost:8000
+    description: Local setup
+tags:
+  - name: scoreboard
+    description: Scoreboard
+  - name: team-rankings
+    description: Team Rankings
+paths:
+  /{league}/scoreboard:
+    get:
+      tags:
+        - scoreboard
+      summary: Getting Scoreboard
+      description: Getting Scoreboard
+      operationId: getScoreboard
+      parameters:
+        - in: path
+          name: league
+          required: true
+          schema:
+            $ref: "#/components/schemas/LeagueEnum"
+        - in: query
+          name: since
+          description: Limiting retrieved events by date. Returned result will have timestamps greater than the date indicates here
+          required: true
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: until
+          description: Limiting retrieved events by date. Returned result will have timestamps less than the date indicates here
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scoreboard"
+              examples:
+                example1:
+                  value:
+                    - id: "4dd7dca1-6606-4afe-b137-935d0d2338d9"
+                      timestamp: "2023-08-07T12:00:00Z"
+                      home:
+                        id: "8ff6a159-4252-41b4-bd50-8c44571efa79"
+                        nickName: "Eagles"
+                        city: "Philadelphia"
+                      away:
+                        id: "46dd4c25-1ed4-49cc-8b21-bc614373ee03"
+                        nickName: "Patriots"
+                        city: "New England"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+      security:
+        - api_key_auth: []
+  /{league}/team-rankings:
+    get:
+      tags:
+        - team-rankings
+      summary: Getting Team Rankings
+      description: Getting Scoreboard
+      operationId: getTeamRankings
+      parameters:
+        - in: path
+          name: league
+          required: true
+          schema:
+            $ref: "#/components/schemas/LeagueEnum"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamRankings"
+              examples:
+                example1:
+                  value:
+                    - teamId: "8ff6a159-4252-41b4-bd50-8c44571efa79"
+                      rank: 1
+                      rankPoints: 1500.0
+                    - teamId: "46dd4c25-1ed4-49cc-8b21-bc614373ee03"
+                      rank: 2
+                      rankPoints: 2000.0
+                    - teamId: "f38773a0-e842-427d-98a7-0ebdca9417e1"
+                      rank: 3
+                      rankPoints: 3000.0
+                    - teamId: "b34e1351-b475-4f68-92b3-c48ad740e388"
+                      rank: 4
+                      rankPoints: 4000.0
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+      security:
+        - api_key_auth: []
+components:
+  schemas:
+    Scoreboard:
+      type: array
+      items:
+        $ref: "#/components/schemas/Event"
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        home:
+          $ref: "#/components/schemas/TeamInfo"
+        away:
+          $ref: "#/components/schemas/TeamInfo"
+    TeamInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nickName:
+          type: string
+        city:
+          type: string
+    TeamRankings:
+      type: array
+      items:
+        $ref: "#/components/schemas/TeamRanking"
+    TeamRanking:
+      type: object
+      properties:
+        teamId:
+          type: string
+          format: uuid
+        rank:
+          type: integer
+          format: int64
+          minimum: 1
+        rankPoints:
+          type: number
+          format: float
+          minimum: 0
+    LeagueEnum:
+      type: string
+      enum:
+        - NFL
+    Problem:
+      description: "Object for returing errors according RFC-7807 - Problem Details for HTTP APIs"
+      type: object
+      readOnly: true
+      required:
+        - title
+        - status
+      properties:
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        cause:
+          $ref: "#/components/schemas/Problem"
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            title: "Invalid Request"
+            status: 400
+            detail: "The request parameters provided are incorrect or in an invalid format."
+            cause:
+              value: "The 'league' parameter provided does not match any of our supported leagues, or the 'since'/'until' query parameters are missing or in an invalid format. Please ensure you're following the correct format and try again."
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            title: "Unauthorized"
+            status: 401
+            detail: "Authentication credentials were missing or incorrect."
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            title: "Forbidden"
+            status: 403
+            detail: "You do not have permission to access this resource."
+    UnexpectedError:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            title: "Unexpected Error"
+            status: 500
+            detail: "An unexpected error occurred. Please try again later."
+  securitySchemes:
+    api_key_auth:
+      type: apiKey
+      in: header
+      name: X-API-Key
