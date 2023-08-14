@@ -2,6 +2,7 @@ using ACMESportsAPI.Exceptions;
 using ACMESportsAPI.Models;
 using ACMESportsAPI.Models.RequestResponse;
 using ACMESportsAPI.Models.ThirdParty;
+using Microsoft.Extensions.Options;
 using Serilog;
 using System.Net;
 using System.Text.Json;
@@ -16,11 +17,11 @@ namespace ACMESportsAPI.Services
         public string BaseUrl { get; }
         private ILogger<EventService> _logger;
 
-        public EventService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<EventService> logger)
+        public EventService(IHttpClientFactory httpClientFactory, IOptions<ThirdPartyAPISettings> settings, ILogger<EventService> logger)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
-            BaseUrl = configuration["BASE_URL"] ?? "http://localhost:8000/";
+            BaseUrl = settings.Value.BaseUrl ?? "http://localhost:8000/";
         }
 
         private async Task<T?> ExecuteRequestAsync<T>(Func<Task<HttpResponseMessage>> httpRequestFunc)
@@ -115,8 +116,8 @@ namespace ACMESportsAPI.Services
         public async Task<EventResponse> GetAggregatedEvents(LeagueEnum league, DateTime startDate, DateTime endDate)
         {
             _logger.LogInformation("Fetching aggregated events for league: {League} from {StartDate} to {EndDate}", league, startDate, endDate);
-            var scoreboardTask = GetScoreboardAsync(league.ToString(), startDate, endDate);
-            var teamRankingsTask = GetTeamRankingsAsync(league.ToString());
+            var scoreboardTask =  GetScoreboardAsync(league.ToString(), startDate, endDate);
+            var teamRankingsTask =  GetTeamRankingsAsync(league.ToString());
 
             await Task.WhenAll(scoreboardTask, teamRankingsTask);
 

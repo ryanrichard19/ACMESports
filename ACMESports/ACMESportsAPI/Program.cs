@@ -4,6 +4,8 @@ using Polly.Contrib.WaitAndRetry;
 using Polly;
 using Serilog.Events;
 using Serilog;
+using ACMESportsAPI.Models;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +22,12 @@ Log.Logger = new LoggerConfiguration()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var baseUri = builder.Configuration["BASE_URL"] ?? "http://localhost:8000/";
+var section = builder.Configuration.GetSection("ThirdPartyAPI");
+
+var baseUri = section["BaseUrl"] ?? "http://localhost:8000/";
 var requestheaders = builder.Configuration["REQUEST_HEADERS"] ?? "X-API-Key";
+
+builder.Services.Configure<ThirdPartyAPISettings>(builder.Configuration.GetSection("ThirdPartyAPI"));
 builder.Services.AddHttpClient("ThirdPartyAPI",
     (services, c) =>
     {
@@ -50,7 +56,7 @@ app.UseHttpsRedirection();
 
 
 
-app.MapPost("/events", async (EventsRequest eventsRequest, IEventService eventService, ILogger<EventService> logger) =>
+app.MapPost("/events", async (EventsRequest eventsRequest, IEventService eventService, IOptions<ThirdPartyAPISettings> settings, ILogger<EventService> logger) =>
 {
     logger.LogInformation("Received event request for league: {League}", eventsRequest.League);
     var events = await eventService.GetAggregatedEvents(eventsRequest.League, eventsRequest.StartDate, eventsRequest.EndDate);

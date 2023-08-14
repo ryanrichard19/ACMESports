@@ -2,6 +2,7 @@
 using ACMESportsAPI.Models;
 using ACMESportsAPI.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using System.Text;
 using System.Text.Json;
@@ -38,6 +39,7 @@ namespace ACMESportsTests.Unit.ServiceUnitTests
         private HttpClient _httpClient;
         private IConfiguration _configuration;
         private ILogger<EventService> _logger;
+        private readonly IOptions<ThirdPartyAPISettings> _thirdPartySettings;
 
 
         public EventServiceUnitTests()
@@ -46,10 +48,14 @@ namespace ACMESportsTests.Unit.ServiceUnitTests
             _configuration = Substitute.For<IConfiguration>();
             _logger = Substitute.For<ILogger<EventService>>();
 
-            _configuration["BASE_URL"].Returns("http://localhost:8000");
-            BASE_URL = _configuration["BASE_URL"];
+            _thirdPartySettings = Options.Create(new ThirdPartyAPISettings
+            {
+                BaseUrl = "http://localhost:8000"
+            });
 
-            
+            BASE_URL = _thirdPartySettings.Value.BaseUrl;
+
+
         }
 
         public void Dispose()
@@ -74,7 +80,7 @@ namespace ACMESportsTests.Unit.ServiceUnitTests
             _httpClientFactory.CreateClient("ThirdPartyAPI").Returns(_httpClient);
             _configuration.GetValue<string>("BASE_URL").Returns(BASE_URL);
 
-            return new EventService(_httpClientFactory, _configuration, _logger);
+            return new EventService(_httpClientFactory, _thirdPartySettings, _logger);
         }
 
         private string ReadJsonFromFile(string filePath)
@@ -90,7 +96,7 @@ namespace ACMESportsTests.Unit.ServiceUnitTests
             var httpClientFactory = Substitute.For<IHttpClientFactory>();
             httpClientFactory.CreateClient("ThirdPartyAPI").Returns(httpClient);
 
-            return new EventService(httpClientFactory, _configuration, _logger);
+            return new EventService(httpClientFactory, _thirdPartySettings, _logger);
         }
 
         private Dictionary<string, HttpResponseMessage> CreateErrorResponseMap(HttpStatusCode statusCode, string errorMessage, params string[] urls)
