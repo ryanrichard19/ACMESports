@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import httpx
 import random
@@ -17,6 +18,7 @@ HEADERS = {"X-API-Key": API_KEY}
 
 MAX_RETRIES = 3
 BASE_WAIT_TIME = 2
+TIMEOUT = 3  # seconds
 
 breaker = pybreaker.CircuitBreaker(fail_max=3, reset_timeout=20)
 
@@ -48,13 +50,20 @@ def wait_decorrelated_jitter_exp(
     reraise=True,
 )
 async def make_request(url, method="GET", headers=None, params=None):
-    async with httpx.AsyncClient() as client:
-        if method == "GET":
-            response = await client.get(url, headers=headers, params=params)
-        return response
+    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+        try:
+            if method == "GET":
+                response = await client.get(url, headers=headers, params=params)
+            if response.status_code >= 400:
+                await parse_and_raise_error(response)
 
+            return response
+        except Exception as e:
+            logger.error(f"An error occurred: {e}")
+            raise e
 
 async def parse_and_raise_error(response):
+    logger.debug("Parse the error")
     """Parse the error response and raise an HTTPException."""
     try:
         error_data = response.json()
@@ -87,11 +96,7 @@ async def get_scoreboard(league, since, until):
     """
     endpoint = f"{THIRD_PARTY_BASE_URL}/{league.value}/scoreboard"
     params = {"since": since, "until": until}
-    print(endpoint, params, HEADERS)
     response = await make_request(endpoint, headers=HEADERS, params=params)
-    if response.status_code >= 400:
-        logger.debug(parse_and_raise_error)
-        await parse_and_raise_error(response)
     return response.json()
 
 
@@ -107,8 +112,32 @@ async def get_team_rankings(league):
     """
     endpoint = f"{THIRD_PARTY_BASE_URL}/{league.value}/team-rankings"
     response = await make_request(endpoint, headers=HEADERS)
-    if response.status_code >= 400:
-        logger.debug(parse_and_raise_error)
-        await parse_and_raise_error(response)
-
     return response.json()
+
+async def fetch_event_data(league, start_date, end_date):
+    """
+    Fetches both scoreboard data and team rankings data concurrently.
+
+    Args:
+        league: The league for which to retrieve the data.
+        start_date: The start date of the time range in ISO format (YYYY-MM-DD).
+        end_date: The end date of the time range in ISO format (YYYY-MM-DD).
+
+    Returns:
+        Tuple containing scoreboard data and team rankings data.
+    """
+    try:
+        scoreboard_data, rankings_data = await asyncio.gather(
+            asyncio.wait_for(get_scoreboard(league, start_date, end_date), TIMEOUT),
+                asyncio.wait_for(get_team_rankings(league), TIMEOUT)
+        )
+        return scoreboard_data, rankings_data
+    except asyncio.TimeoutError:
+        logger.error("API call timed out")
+        raise HTTPException(status_code=504, detail="External API call timed out")
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
+        raise e
+        
+    
+    

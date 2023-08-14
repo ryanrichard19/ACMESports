@@ -67,6 +67,9 @@ async def unhandled_exception_handler(
     )
     exception_type, exception_value, _ = sys.exc_info()
     exception_name = getattr(exception_type, "__name__", None)
+    logger.debug("Host: %s, Port: %s", host, port)
+    logger.debug("Request method: %s, URL: %s", request.method, url)
+    logger.debug("Exception name: %s, Exception value: %s", exception_name, exception_value)
     logger.debug("exception_name: %s", exception_name)
     logger.error(
         "%s:%s - \"%s %s\" 500 Internal Server Error <%s: %s>",
@@ -78,16 +81,15 @@ async def unhandled_exception_handler(
         exception_value,
     )
 
+    if isinstance(exc, httpx.TimeoutException):
+        user_message = "External service timed out. Please try again later."
+        logger.error("Timeout reached when calling URL: %s", request.url)
+        return PlainTextResponse(user_message, status_code=408)  # 408 Request Timeout
+
     if isinstance(exc, httpx.HTTPError):
         user_message = "An external service error occurred. Please contact admin for details."
         logger.error("External API Error: %s", str(exc))
         return PlainTextResponse(user_message, status_code=500)
-
-    if isinstance(exc, pybreaker.CircuitBreakerError):
-        user_message = "External service currently unavailable. Please try again later."
-        logger.error("Circuit open due to multiple failures with external service.")
-        return PlainTextResponse(user_message, status_code=503)  # 503 Service Unavailable
-
 
     if isinstance(exc, pybreaker.CircuitBreakerError):
         user_message = "External service currently unavailable. Please try again later."

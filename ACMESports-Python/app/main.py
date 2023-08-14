@@ -9,7 +9,7 @@ from app.exception_handlers import (
     unhandled_exception_handler,
 )
 from app.middleware import log_request_middleware
-from app.api.api_client import get_scoreboard, get_team_rankings
+from app.api.api_client import fetch_event_data
 from app.data_transformer import transform_events
 from app.schemas import EventsRequest, EventsResponse
 from app.logger import logger
@@ -58,9 +58,7 @@ async def get_events(request: EventsRequest):
         end_date,
     )
 
-    scoreboard_data, rankings_data = await asyncio.gather(
-        get_scoreboard(league, start_date, end_date), get_team_rankings(league)
-    )
+    scoreboard_data, rankings_data = await fetch_event_data(league, start_date, end_date)
 
     transformed_data = transform_events(scoreboard_data, rankings_data)
 

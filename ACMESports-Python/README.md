@@ -52,4 +52,20 @@ uvicorn app.main:app --reload
 3. **Run your integration tests**
     ```bash
     pytest tests/integration_tests
+
+### 4. Testing Latency
+
+To simulate network latency in your Docker container, you can use the `tc` (traffic control) tool with the `netem` (network emulator) module. Here are the commands to add, change, and remove latency:
+
+**Add latency:**
+```bash
+docker exec <CONTAINER_ID_OR_NAME> tc qdisc add dev eth0 root netem delay 200ms
+```
+**Increase latency:**
+```bash
+docker exec <CONTAINER_ID_OR_NAME> tc qdisc change dev eth0 root netem delay 200ms
+```
+**Remove latency:**
+```bash
+docker exec <CONTAINER_ID_OR_NAME> tc qdisc del dev eth0 root netem
 ```

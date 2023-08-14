@@ -2,13 +2,16 @@ version: '3'
 
 services:
   prism:
-    image: node
+    cap_add:
+      - NET_ADMIN
+    image: node:slim
     working_dir: /prism
     volumes:
       - ./tests/prism-open-api.yaml:/prism/prism-open-api.yaml
     ports:
       - "4010:4010"
     command:
-      sh -c "npm install -g @stoplight/prism-cli nodemon &&
+      sh -c "apt-get update &&
+             apt-get install -y iproute2 &&
+             npm install -g @stoplight/prism-cli nodemon &&
              nodemon --watch /prism/prism-open-api.yaml --exec 'prism mock --host 0.0.0.0 /prism/prism-open-api.yaml'"
-
