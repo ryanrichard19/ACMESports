@@ -11,5 +11,5 @@ logging.basicConfig(
     datefmt="%Y-%m-%dT%H:%M:%SZ",
 )
 logger = logging.getLogger("ACMESports")
-log_level = os.getenv("LOG_LEVEL", "DEBUG")
+log_level = os.getenv("LOG_LEVEL", "INFO")
 logger.setLevel(log_level)
