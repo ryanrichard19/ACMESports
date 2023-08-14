@@ -1,5 +1,7 @@
+
 from jsonschema import ValidationError
 from app.schemas.event import Event, EventsResponse
+from app.logger import logger
 
 
 def rankings_to_dict(rankings_list):
@@ -13,23 +15,26 @@ def rankings_to_dict(rankings_list):
 
 
 def transform_events(scoreboard_data, rankings_data_list):
+    logger.debug("Transforming events data")
     rankings_data = rankings_to_dict(rankings_data_list)
+    logger.debug(f"Rankings data: {rankings_data}")
     transformed_data = []
-
-    for event in scoreboard_data["data"]:
+    logger.debug(f"Scoreboard data: {scoreboard_data}")
+    for event in scoreboard_data:
+        logger.debug(f"Processing event: {event}")
         home_team_id = event["home"]["id"]
         away_team_id = event["away"]["id"]
-
+        logger.debug(f"Home team id: {home_team_id}")
         home_ranking_details = rankings_data.get(
             home_team_id, {"rank": "N/A", "rankPoints": "N/A"}
         )
         away_ranking_details = rankings_data.get(
             away_team_id, {"rank": "N/A", "rankPoints": "N/A"}
         )
-
+        logger.debug(f"Home team ranking details: {home_ranking_details}")
         # Extract eventDate and eventTime from timestamp
         event_date, event_time = event["timestamp"].split("T")
-
+        logger.debug(f"Event date: {event_date}")
         transformed_event = {
             "eventId": event["id"],
             "eventDateimestamp": event_date,

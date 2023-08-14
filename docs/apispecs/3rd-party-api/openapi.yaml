@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Retrieving Events 3rd Party API 
+  title: Retrieving Events 3rd Party API
   description: |-
     This is the API you need to call for getting the data,
     which will be exposed via the Restful API described in the openapi-challenge-3rd-party OpenAPI file that you need to implement
@@ -29,37 +29,50 @@ paths:
         - in: path
           name: league
           required: true
-          schema: 
-            $ref: '#/components/schemas/LeagueEnum'
+          schema:
+            $ref: "#/components/schemas/LeagueEnum"
         - in: query
           name: since
           description: Limiting retrieved events by date. Returned result will have timestamps greater than the date indicates here
           required: true
-          schema: 
+          schema:
             type: string
             format: date
         - in: query
           name: until
           description: Limiting retrieved events by date. Returned result will have timestamps less than the date indicates here
           required: true
-          schema: 
+          schema:
             type: string
             format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Scoreboard'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        default: 
-          $ref: '#/components/responses/UnexpectedError'
+                $ref: "#/components/schemas/Scoreboard"
+              examples:
+                example1:
+                  value:
+                    - id: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                      timestamp: "2023-08-07T12:00:00Z"
+                      home:
+                        id: "1234abcd-5678-efgh-ijkl-9876mnopqrst"
+                        nickName: "Eagles"
+                        city: "Philadelphia"
+                      away:
+                        id: "9876mnop-5678-efgh-ijkl-1234abcdqrst"
+                        nickName: "Patriots"
+                        city: "New England"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
       security:
         - api_key_auth: []
   /{league}/team-rankings:
@@ -73,73 +86,79 @@ paths:
         - in: path
           name: league
           required: true
-          schema: 
-            $ref: '#/components/schemas/LeagueEnum'
+          schema:
+            $ref: "#/components/schemas/LeagueEnum"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TeamRankings'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        default: 
-          $ref: '#/components/responses/UnexpectedError'
+                $ref: "#/components/schemas/TeamRankings"
+              examples:
+                example1:
+                  value:
+                    - teamId: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                      rank: 1
+                      rankPoints: 1500.0
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
       security:
         - api_key_auth: []
 components:
   schemas:
-    Scoreboard: 
-      type: array
-      items: 
-        $ref: '#/components/schemas/Event'
-    Event: 
-      type: object
-      properties: 
-        id: 
-          type: string
-          format: uuid
-        timestamp: 
-          type: string
-          format: date-time
-        home: 
-          $ref: '#/components/schemas/TeamInfo'
-        away: 
-          $ref: '#/components/schemas/TeamInfo'
-    TeamInfo:
-      type: object
-      properties: 
-        id: 
-          type: string
-          format: uuid
-        nickName: 
-          type: string
-        city: 
-          type: string
-    TeamRankings: 
+    Scoreboard:
       type: array
       items:
-        $ref: '#/components/schemas/TeamRanking'
+        $ref: "#/components/schemas/Event"
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        home:
+          $ref: "#/components/schemas/TeamInfo"
+        away:
+          $ref: "#/components/schemas/TeamInfo"
+    TeamInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nickName:
+          type: string
+        city:
+          type: string
+    TeamRankings:
+      type: array
+      items:
+        $ref: "#/components/schemas/TeamRanking"
     TeamRanking:
       type: object
       properties:
-        teamId: 
+        teamId:
           type: string
           format: uuid
         rank:
           type: integer
           format: int64
           minimum: 1
-        rankPoints: 
+        rankPoints:
           type: number
           format: float
           minimum: 0
-    LeagueEnum: 
+    LeagueEnum:
       type: string
       enum:
         - NFL
@@ -147,47 +166,46 @@ components:
       description: "Object for returing errors according RFC-7807 - Problem Details for HTTP APIs"
       type: object
       readOnly: true
-      required: 
+      required:
         - title
         - status
       properties:
         title:
           type: string
-        status: 
+        status:
           type: integer
           format: int32
         detail:
           type: string
-        cause: 
-          $ref: '#/components/schemas/Problem'
+        cause:
+          $ref: "#/components/schemas/Problem"
   responses:
     BadRequest:
       description: Bad Request
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Problem'
+            $ref: "#/components/schemas/Problem"
     Unauthorized:
       description: Unauthorized
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Problem'
+            $ref: "#/components/schemas/Problem"
     Forbidden:
       description: Forbidden
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Problem'
+            $ref: "#/components/schemas/Problem"
     UnexpectedError:
       description: Unexpected error
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Problem'
+            $ref: "#/components/schemas/Problem"
   securitySchemes:
     api_key_auth:
       type: apiKey
       in: header
-      name: X-API-Key      
-
+      name: X-API-Key

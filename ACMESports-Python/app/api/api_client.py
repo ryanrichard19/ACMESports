@@ -51,7 +51,7 @@ async def make_request(url, method="GET", headers=None, params=None):
     async with httpx.AsyncClient() as client:
         if method == "GET":
             response = await client.get(url, headers=headers, params=params)
-        return response.json()
+        return response
 
 
 async def parse_and_raise_error(response):
@@ -87,8 +87,10 @@ async def get_scoreboard(league, since, until):
     """
     endpoint = f"{THIRD_PARTY_BASE_URL}/{league.value}/scoreboard"
     params = {"since": since, "until": until}
+    print(endpoint, params, HEADERS)
     response = await make_request(endpoint, headers=HEADERS, params=params)
     if response.status_code >= 400:
+        logger.debug(parse_and_raise_error)
         await parse_and_raise_error(response)
     return response.json()
 
@@ -106,6 +108,7 @@ async def get_team_rankings(league):
     endpoint = f"{THIRD_PARTY_BASE_URL}/{league.value}/team-rankings"
     response = await make_request(endpoint, headers=HEADERS)
     if response.status_code >= 400:
+        logger.debug(parse_and_raise_error)
         await parse_and_raise_error(response)
 
     return response.json()

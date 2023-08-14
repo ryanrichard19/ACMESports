@@ -58,10 +58,12 @@ async def get_events(request: EventsRequest):
         end_date,
     )
 
-    scoreboard_data, rankings_data = await asyncio.gather(
-        get_scoreboard(league, start_date, end_date), get_team_rankings(league)
-    )
-   
+    # scoreboard_data, rankings_data = await asyncio.gather(
+    #     get_scoreboard(league, start_date, end_date), get_team_rankings(league)
+    # )
+
+    scoreboard_data = await get_scoreboard(league, start_date, end_date)
+    rankings_data = await get_team_rankings(league)
     transformed_data = transform_events(scoreboard_data, rankings_data)
 
     return EventsResponse(events=transformed_data)

@@ -67,6 +67,7 @@ async def unhandled_exception_handler(
     )
     exception_type, exception_value, _ = sys.exc_info()
     exception_name = getattr(exception_type, "__name__", None)
+    logger.debug("exception_name: %s", exception_name)
     logger.error(
         "%s:%s - \"%s %s\" 500 Internal Server Error <%s: %s>",
         host,
